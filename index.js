@@ -1,21 +1,22 @@
-const express = require('express');
-const path = require('path');
-const fs = require('fs');
-const cors = require('cors');
-
-const port = process.env.PORT || 80;
+const express = require("express");
+const path = require("path");
+const https = require("https");
+const fs = require("fs");
+const cors = require("cors");
 
 const app = express();
+
+const options = {
+  key: fs.readFileSync(path.join(__dirname, "private.key")),
+  cert: fs.readFileSync(path.join(__dirname, "cert.crt")),
+};
 app.use(cors());
-app.options('*', cors());
 
-app.use('/public', express.static(path.join(__dirname, 'public')));
-
-const template = fs.readFileSync(path.resolve('./public/index.html'), 'utf-8');
-app.get('/', function (req, res) {
-    res.send(template);
+app.use(express.static(path.join(__dirname, "x/dist")));
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "x/dist/index.html"));
 });
 
-app.listen(port, () => {
-    console.log("server started on port " + port);
+https.createServer(options, app).listen(443, () => {
+  console.log("Server is running on https://localhost:443");
 });
